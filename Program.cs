@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Threading;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -10,25 +11,61 @@ namespace Giraffe_2 {
 
 
 			string dir = search() + "\\Support Files\\AErender.exe";
-
 			Console.WriteLine(dir);
 			int core = findcore();
 
-			for (int i = 0; core > i; i++) {
-				Process process = new Process();
-				ProcessStartInfo info = new ProcessStartInfo();
-				info.UseShellExecute = true;
-				info.FileName = dir;
-				// info.WorkingDirectory = "M:\\";
-				info.Arguments = " -project \"M:\\Render Watch folder\\AFX Render file\\AFX Render_1.aep\"";
-				process.StartInfo = info;
-				process.Start();
-				Console.WriteLine("Yay!!");
+
+			for (;;)
+			{
+				var updated = System.IO.File.GetLastWriteTime("M:\\Render Watch folders\\AFX Render file\\AFX Render_1.aep");
+				Console.WriteLine(updated);
+				var crtime = DateTime.Now;
+				Console.WriteLine(crtime);
+				TimeSpan interval = crtime - updated;
+				TimeSpan maxtime = new TimeSpan(0, 0, 10, 0);
+				Console.WriteLine(interval);
 
 
+				if (maxtime >= interval) {
+					// Process process = new Process();
+					Process[] processes = new Process[core];
+
+
+
+					for (int i = 0; core > i; i++) {
+
+
+						ProcessStartInfo info = new ProcessStartInfo();
+						info.UseShellExecute = true;
+						info.FileName = dir;
+						//info.WorkingDirectory = "M:\\";
+						Directory.SetCurrentDirectory("M:\\");
+						info.Arguments = " -project \"M:\\Render Watch folders\\AFX Render file\\AFX Render_1.aep\"";
+						processes[i] = Process.Start(info);
+						// processes.StartInfo = info;
+						// Process Run = Process.Start(info);
+						Console.WriteLine(String.Format("Yay!! There are {0} cores!", core));
+
+					}
+
+					while(true) {
+						bool doBreak = true;
+
+						foreach (Process process in processes) {
+							if (!process.HasExited) {
+								doBreak = false;
+								break;
+							}
+						}
+
+						if (doBreak) break;
+						else Thread.Sleep(10000);
+					}
+						
+				} else {
+					Thread.Sleep(10000);
+				}
 			}
-			//Console.ReadLine();
-
 		}
 
 		static string search() {
@@ -47,13 +84,13 @@ namespace Giraffe_2 {
 					dir = m.Value;
 				}
 				year = Convert.ToDouble(dir);
-				//Console.WriteLine(year);
 				if (largest < year) {
 					largest = year;
 					index = i;
 				}
 
 			}
+			Console.WriteLine("You are using AFX CC " + dirs);
 			return dirs[index];
 		}
 
