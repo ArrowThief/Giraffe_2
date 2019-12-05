@@ -10,20 +10,21 @@ namespace Giraffe_2 {
 		static void Main(string[] args) {
 
 
-			string dir = search() + "\\Support Files\\AErender.exe";
-			Console.WriteLine(dir);
+			string dir = search();
+			Console.WriteLine("Rendering with " + dir.Substring(29));
+			dir = search() + "\\Support Files\\AErender.exe";
 			int core = findcore();
 
 
 			for (;;)
 			{
 				var updated = System.IO.File.GetLastWriteTime("M:\\Render Watch folders\\AFX Render file\\AFX Render_1.aep");
-				Console.WriteLine(updated);
+				//Console.WriteLine(updated);
 				var crtime = DateTime.Now;
-				Console.WriteLine(crtime);
+				//Console.WriteLine(crtime);
 				TimeSpan interval = crtime - updated;
 				TimeSpan maxtime = new TimeSpan(0, 0, 10, 0);
-				Console.WriteLine(interval);
+				Console.WriteLine("Time since last file save: " + interval);
 
 
 				if (maxtime >= interval) {
@@ -90,7 +91,6 @@ namespace Giraffe_2 {
 				}
 
 			}
-			Console.WriteLine("You are using AFX CC " + dirs);
 			return dirs[index];
 		}
 
