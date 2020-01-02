@@ -36,6 +36,8 @@ namespace Giraffe_2 {
 					Process[] processes = new Process[core];
 					Process[] processes2 = new Process[core];
 					Console.Clear();
+					Console.WriteLine("Time since Render_1 was saved: " + Render_1);
+					Console.WriteLine("Time since Render_2 was saved: " + Render_2);
 					Console.WriteLine("Starting Render_1 and Render_2, begining with Render_1");
 					Console.WriteLine(String.Format("Launching {0} Instaces of AfterFX", core));
 					for (int i = 0; core > i; i++) {
@@ -61,7 +63,7 @@ namespace Giraffe_2 {
 						Console.Clear();
 						Console.WriteLine("CPU usage:" + usage + "%");
 						int usageD = Convert.ToInt16(usage);
-						int breaker =0;
+						int breaker = 0;
 
 						foreach (Process process in processes) {
 							if (!process.HasExited) {
@@ -122,10 +124,11 @@ namespace Giraffe_2 {
 					}
 				} else if (maxtime >= Render_1) {
 					Console.Clear();
+					Console.WriteLine("Time since Render_1 was saved: " + Render_1);
 					Console.WriteLine("Starting Render_1");
 					Console.WriteLine(String.Format("Launching {0} Instaces of AfterFX", core));
 					Process[] processes = new Process[core];
-					Console.WriteLine("Starting Render_1");
+
 
 					for (int i = 0; core > i; i++) {
 
@@ -170,10 +173,11 @@ namespace Giraffe_2 {
 					}
 				} else if (maxtime >= Render_2) {
 					Console.Clear();
+					Console.WriteLine("Time since Render_2 was saved: " + Render_2);
 					Console.WriteLine("Starting Render_2");
 					Console.WriteLine(String.Format("Launching {0} Instaces of AfterFX", core));
 					Process[] processes2 = new Process[core];
-					Console.WriteLine("Starting Render_2");
+
 
 					for (int i = 0; core > i; i++) {
 						ProcessStartInfo info = new ProcessStartInfo();
@@ -194,6 +198,7 @@ namespace Giraffe_2 {
 						string usage = cpuCounter.NextValue().ToString("0");
 						Thread.Sleep(1000);
 						usage = cpuCounter.NextValue().ToString("0");
+						Console.Clear();
 						Console.WriteLine("CPU usage:" + usage + "%");
 						int usageD = Convert.ToInt16(usage);
 
@@ -216,6 +221,7 @@ namespace Giraffe_2 {
 					string usage = cpuCounter.NextValue().ToString("0");
 					Thread.Sleep(1000);
 					usage = cpuCounter.NextValue().ToString("0");
+					Console.Clear();
 					Console.WriteLine("CPU usage:" + usage + "%");
 				}
 			}
