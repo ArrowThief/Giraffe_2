@@ -25,7 +25,7 @@ namespace Giraffe_2 {
 				TimeSpan Render_1 = crtime - updated1;
 				TimeSpan Render_2 = crtime - updated2;
 				TimeSpan maxtime = new TimeSpan(0, 0, 30, 0);
-				Console.Clear();
+				clear();
 				Console.WriteLine("Time since Render_1 was saved: " + Render_1);
 				Console.WriteLine("Time since Render_2 was saved: " + Render_2);
 
@@ -35,7 +35,7 @@ namespace Giraffe_2 {
 				if (maxtime >= Render_1 && maxtime >= Render_2) {
 					Process[] processes = new Process[core];
 					Process[] processes2 = new Process[core];
-					Console.Clear();
+					clear();
 					Console.WriteLine("Time since Render_1 was saved: " + Render_1);
 					Console.WriteLine("Time since Render_2 was saved: " + Render_2);
 					Console.WriteLine("Starting Render_1 and Render_2, begining with Render_1");
@@ -60,7 +60,7 @@ namespace Giraffe_2 {
 						string usage = cpuCounter.NextValue().ToString("0");
 						Thread.Sleep(1000);
 						usage = cpuCounter.NextValue().ToString("0");
-						Console.Clear();
+						clear();
 						Console.WriteLine("CPU usage:" + usage + "%");
 						int usageD = Convert.ToInt16(usage);
 						int breaker = 0;
@@ -81,7 +81,7 @@ namespace Giraffe_2 {
 						usage = cpuCounter.NextValue().ToString("0");
 
 					}
-					Console.Clear();
+					clear();
 					Console.WriteLine("Starting Render_2");
 					for (int i = 0; core > i; i++) {
 						ProcessStartInfo info = new ProcessStartInfo();
@@ -102,7 +102,7 @@ namespace Giraffe_2 {
 						string usage = cpuCounter.NextValue().ToString("0");
 						Thread.Sleep(1000);
 						usage = cpuCounter.NextValue().ToString("0");
-						Console.Clear();
+						clear();
 						Console.WriteLine("CPU usage:" + usage + "%");
 						int usageD = Convert.ToInt16(usage);
 						int breaker = 0;
@@ -123,7 +123,7 @@ namespace Giraffe_2 {
 						usage = cpuCounter.NextValue().ToString("0");
 					}
 				} else if (maxtime >= Render_1) {
-					Console.Clear();
+					clear();
 					Console.WriteLine("Time since Render_1 was saved: " + Render_1);
 					Console.WriteLine("Starting Render_1");
 					Console.WriteLine(String.Format("Launching {0} Instaces of AfterFX", core));
@@ -150,7 +150,7 @@ namespace Giraffe_2 {
 						string usage = cpuCounter.NextValue().ToString("0");
 						Thread.Sleep(1000);
 						usage = cpuCounter.NextValue().ToString("0");
-						Console.Clear();
+						clear();
 						Console.WriteLine("CPU usage:" + usage + "%");
 						var usageD = Convert.ToInt16(usage);
 						int breaker = 0;
@@ -172,7 +172,7 @@ namespace Giraffe_2 {
 
 					}
 				} else if (maxtime >= Render_2) {
-					Console.Clear();
+					clear();
 					Console.WriteLine("Time since Render_2 was saved: " + Render_2);
 					Console.WriteLine("Starting Render_2");
 					Console.WriteLine(String.Format("Launching {0} Instaces of AfterFX", core));
@@ -198,7 +198,7 @@ namespace Giraffe_2 {
 						string usage = cpuCounter.NextValue().ToString("0");
 						Thread.Sleep(1000);
 						usage = cpuCounter.NextValue().ToString("0");
-						Console.Clear();
+						clear();
 						Console.WriteLine("CPU usage:" + usage + "%");
 						int usageD = Convert.ToInt16(usage);
 
@@ -221,7 +221,7 @@ namespace Giraffe_2 {
 					string usage = cpuCounter.NextValue().ToString("0");
 					Thread.Sleep(1000);
 					usage = cpuCounter.NextValue().ToString("0");
-					Console.Clear();
+					clear();
 					Console.WriteLine("CPU usage:" + usage + "%");
 				}
 			}
@@ -264,6 +264,12 @@ namespace Giraffe_2 {
 			}
 		}
 
+
+		static void clear (){
+			try {
+						Console.Clear();
+					} catch { };
+		}
 	}
 }
 
