@@ -258,17 +258,17 @@ namespace Giraffe_2 {
 			string name = System.Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
 			//Console.WriteLine(name);
 			if (name == "AMD64 Family 21 Model 1 Stepping 2, AuthenticAMD") {
-				return 4;
+				return 5;
 			} else {
 				return core;
 			}
 		}
 
 
-		static void clear (){
+		static void clear() {
 			try {
-						Console.Clear();
-					} catch { };
+				Console.Clear();
+			} catch { };
 		}
 	}
 }
