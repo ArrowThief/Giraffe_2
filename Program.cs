@@ -305,15 +305,3 @@ namespace Giraffe_2 {
 
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
