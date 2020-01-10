@@ -17,6 +17,7 @@ namespace Giraffe_2 {
 			Console.WriteLine("Rendering with " + dir.Substring(29));
 			dir = search() + "\\Support Files\\AErender.exe";
 			int core = findcore();
+			Thread.Sleep(10000);
 
 
 
@@ -27,6 +28,9 @@ namespace Giraffe_2 {
 				Console.WriteLine("Sleeping for 10 seconds between checking for renders");
 				Thread.Sleep(10000);
 				RenderExr(dir, core);
+				clear();
+				Console.WriteLine("Sleeping for 10 seconds between checking for renders");
+				Thread.Sleep(10000);
 			}
 		}
 
@@ -81,7 +85,9 @@ namespace Giraffe_2 {
 			string[] filepaths = Filepath(core);
 			int count = 0;
 			if (filepaths == null) {
+				clear();
 				Console.WriteLine("No previews to render");
+				Thread.Sleep(4000);
 				return;
 			}
 			for (int c = 0; c < filepaths.Length; c++) {
@@ -125,6 +131,8 @@ namespace Giraffe_2 {
 			clear();
 			Console.WriteLine("Time since Render_1 was saved: " + Render_1);
 			Console.WriteLine("Time since Render_2 was saved: " + Render_2);
+			Thread.Sleep(4000);
+
 			PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
 
 			//render Both Render 1 and Render 2
@@ -255,7 +263,7 @@ namespace Giraffe_2 {
 				return coreCount;
 
 			} else {
-				Console.WriteLine("No files in folder");
+				//Console.WriteLine("No files in folder");
 				return null;
 			}
 
@@ -282,10 +290,9 @@ namespace Giraffe_2 {
 
 				if (doBreak) break;
 				else if (usageD <= 5) {
-					Console.WriteLine("Breaker is now" +breaker + "it will resume the ");
+					Console.WriteLine("Breaker is now" + breaker + "it will resume the ");
 					breaker++;
-				}
-				else if (breaker == 30) break;
+				} else if (breaker == 30) break;
 				else Thread.Sleep(100);
 				usage = cpuCounter.NextValue().ToString("0");
 				Thread.Sleep(100);
