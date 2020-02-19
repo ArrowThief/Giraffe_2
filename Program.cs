@@ -1,4 +1,4 @@
-﻿using System.Runtime.ExceptionServices;
+﻿
 using System.Threading;
 using System;
 using System.Diagnostics;
@@ -11,36 +11,84 @@ namespace Giraffe_2 {
 
 
 		static void Main(string[] args) {
+			//Regex Arguments = new Regex(@"(/c)");
+			//string CoreOverRide = "";
+			bool skipCore = false;
+			bool PrevOnly = false;
+			bool FinalOnly = false;
+			int core = 1;
+			string VOveride = "null";
+			try {
+				if (args.Length > 0) {
+					for (int a = 0; a < args.Length; a++) {
+						if (args[a] == "/c") {
+							//CoreOverRide = args[a + 1];
+							skipCore = true;
+							core = Convert.ToInt32(args[a + 1]);
+							Console.WriteLine(args[0] + " " + args[1]);
+						} else if (args[a] == "/p") {
+							Console.WriteLine("Rendering in Preview only mode.");
+							PrevOnly = true;
+						} else if (args[a] == "/f") {
+							Console.WriteLine("Rendering in Final only mode.");
+							FinalOnly = true;
+						} else if (args[a] == "/v") {
+							VOveride = args[a + 1];
+						} else Console.WriteLine("test");
+					}
+				} else {
+					Console.WriteLine("No Arguments");
+				}
 
-
-			string dir = search();
+			} catch {
+				if (args.Length > 0) {
+					skipCore = false;
+					PrevOnly = false;
+					FinalOnly = false;
+					Console.WriteLine("Argument syntax is incorect or you tried to disable both render modes, which would leave it doing nothing. Using default settings. \nYou can use /c + space + number for chosing thread number \n/f for final render only mode \n/p for preview only mdoe \n Press ENTER to continue.");
+					Console.ReadLine();
+				} else Console.WriteLine("Issue with the arguments");
+			}
+			if (PrevOnly == true && FinalOnly == true) {
+				Console.WriteLine("You tried to disable both render modes which would cause the program to do nothing. \nSwitching to render all mode instead.");
+				Thread.Sleep(5000);
+				PrevOnly = false;
+				FinalOnly = false;
+			}
+			string dir = search(VOveride);
 			Console.WriteLine("Rendering with " + dir.Substring(29));
-			dir = search() + "\\Support Files\\AErender.exe";
-			int core = findcore();
-			Thread.Sleep(10000);
-
-
-
+			dir = search(VOveride) + "\\Support Files\\AErender.exe";
+			if (!skipCore) core = findcore();
+			else Console.WriteLine("Overide thread count: " + core);
+			Thread.Sleep(3000);
 			for (; ; )
 			{
-				PreviewRender(dir, core);
-				clear();
-				Console.WriteLine("Sleeping for 10 seconds between checking for renders");
-				Thread.Sleep(10000);
-				RenderExr(dir, core);
-				clear();
-				Console.WriteLine("Sleeping for 10 seconds between checking for renders");
-				Thread.Sleep(10000);
+				if (!FinalOnly) {
+					PreviewRender(dir, core);
+					clear();
+					Console.WriteLine("Sleeping for 10 seconds between checking for renders");
+					Thread.Sleep(10000);
+				}
+				if (!PrevOnly) {
+					RenderFinal(dir, core);
+					clear();
+					Console.WriteLine("Sleeping for 10 seconds between checking for renders");
+					Thread.Sleep(10000);
+				}
 			}
 		}
 
-		static string search() {
+		static string search(string VOveride) {
 
 			string[] dirs = Directory.GetDirectories(@"c:\program files\Adobe", "*After effects*");
 			string pattern = @"[0-9.]+";
 			double largest = 0;
 			double year;
 			int index = -1;
+			if (VOveride != "null") {
+				Console.WriteLine("Attempting to run AfterEffects " + VOveride);
+				return @"c:\program files\Adobe\Adobe After Effects " + VOveride;
+			}
 
 			Regex exp = new Regex(pattern);
 
@@ -62,13 +110,42 @@ namespace Giraffe_2 {
 		static int findcore() {
 			int hcore = Environment.ProcessorCount;
 			int core = hcore / 4;
-			string name = System.Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
-			//Console.WriteLine(name);
-			if (name == "AMD64 Family 21 Model 1 Stepping 2, AuthenticAMD") {
-				return 5;
-			} else {
-				return core;
+			string answer = "";
+			Console.WriteLine("Auto selected instance count is: " + core + "\nOverwrite?");
+			try {
+				answer = Reader.ReadLine(5000);
+			} catch (TimeoutException) {
+				clear();
+				Console.WriteLine("Using auto selected thread count");
 			}
+			// answer = Console.ReadLine();
+
+			if (answer.ToLower() == "y" || answer == "yes") {
+				Console.WriteLine("What should it be overwriten to? ");
+				int OverwriteNum = 0;
+				string Overwrite;
+				Overwrite = Reader.ReadLine();
+				bool nan = int.TryParse(Overwrite, out OverwriteNum);
+				//Console.WriteLine(nan);
+				if (nan) return OverwriteNum;
+				else {
+					while (!nan) {
+						Console.WriteLine("You need to ender a number");
+						Overwrite = Console.ReadLine();
+						nan = int.TryParse(Overwrite, out OverwriteNum);
+					}
+					//Console.WriteLine(OverwriteNum);
+					return OverwriteNum;
+				}
+			} else { //if (answer.ToLower() == "n" || answer == "no") 
+				string name = System.Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
+				//Console.WriteLine(name);
+				if (name == "AMD64 Family 21 Model 1 Stepping 2, AuthenticAMD") {
+					return 4;
+				} else {
+					return core;
+				}
+			}//else return core;
 		}
 
 		static void clear() {
@@ -120,7 +197,7 @@ namespace Giraffe_2 {
 
 			}
 		}
-		static void RenderExr(string dir, int core) {
+		static void RenderFinal(string dir, int core) {
 			var updated1 = System.IO.File.GetLastWriteTime("M:\\Render Watch folders\\AFX Render file\\AFX Render_1.aep");
 			var updated2 = System.IO.File.GetLastWriteTime("M:\\Render Watch folders\\AFX Render file\\AFX Render_2.aep");
 			var crtime = DateTime.Now;
@@ -146,7 +223,7 @@ namespace Giraffe_2 {
 				Console.WriteLine("Starting Render_1 and Render_2, begining with Render_1");
 				Console.WriteLine(String.Format("Launching {0} Instaces of AfterFX", core));
 				for (int i = 0; core > i; i++) {
-
+					Thread.Sleep(500);
 					ProcessStartInfo info = new ProcessStartInfo();
 					info.UseShellExecute = true;
 					info.FileName = dir;
@@ -165,6 +242,7 @@ namespace Giraffe_2 {
 				clear();
 				Console.WriteLine("Starting Render_2");
 				for (int i = 0; core > i; i++) {
+					Thread.Sleep(500);
 					ProcessStartInfo info = new ProcessStartInfo();
 					info.UseShellExecute = true;
 					info.FileName = dir;
@@ -189,7 +267,7 @@ namespace Giraffe_2 {
 
 
 				for (int i = 0; core > i; i++) {
-
+					Thread.Sleep(500);
 					ProcessStartInfo info = new ProcessStartInfo();
 					info.UseShellExecute = true;
 					info.FileName = dir;
@@ -214,6 +292,7 @@ namespace Giraffe_2 {
 
 
 				for (int i = 0; core > i; i++) {
+					Thread.Sleep(500);
 					ProcessStartInfo info = new ProcessStartInfo();
 					info.UseShellExecute = true;
 					info.FileName = dir;
@@ -301,6 +380,7 @@ namespace Giraffe_2 {
 
 			}
 		}
+
 
 
 	}
