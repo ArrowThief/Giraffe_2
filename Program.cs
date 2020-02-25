@@ -16,6 +16,9 @@ namespace Giraffe_2 {
 			bool skipCore = false;
 			bool PrevOnly = false;
 			bool FinalOnly = false;
+			string FinalFilePath1 = "M:\\Render Watch folders\\AFX Render file\\AFX Render_1.aep";
+			string FinalFilePath2 = "M:\\Render Watch folders\\AFX Render file\\AFX Render_2.aep";
+			string PreviewFilePath = "M:\\Render Watch folders\\Preview watch folder\\";
 			int core = 1;
 			string VOveride = "null";
 			try {
@@ -26,15 +29,25 @@ namespace Giraffe_2 {
 							skipCore = true;
 							core = Convert.ToInt32(args[a + 1]);
 							Console.WriteLine(args[0] + " " + args[1]);
-						} else if (args[a] == "/p") {
+						} else if (args[a].ToLower() == "/p") {
 							Console.WriteLine("Rendering in Preview only mode.");
 							PrevOnly = true;
-						} else if (args[a] == "/f") {
+						} else if (args[a].ToLower() == "/f") {
 							Console.WriteLine("Rendering in Final only mode.");
 							FinalOnly = true;
-						} else if (args[a] == "/v") {
+						} else if (args[a].ToLower() == "/v") {
 							VOveride = args[a + 1];
-						} else Console.WriteLine("test");
+						} else if (args[a].ToLower() == "/pf") {
+							PreviewFilePath = args[a + 1];
+						} else if (args[a].ToLower() == "/ff") {
+							FinalFilePath1 = args[a + 1];
+							FinalFilePath2 = args[a + 2];
+						} else if (args[a].ToLower() == "/h") {
+							Console.WriteLine("This application will try to run multipul instances AfterEffects to maximize the render potentual of a single computer. \nIt does this in one of two ways. \nThe first is by opening a single file that you can save over every time you want to start a new render \n(it checks to see if the file is less than 20 minutes old.). \nSecond by checking a more traditinal watch folder.\nYou can specify file paths and other settings with arguments.\n \n/PF Followed by a space and then a filepath will change the watch folder. \n/FF followed by a space and then a filepath will set the first watch file, You can add another space followed by a second file path for a second watch file.");
+							Console.WriteLine("/C followed by a space and then a number will overide the auto genarated instance number.  \n/P Will only use the watch folder and ignore the watch file. \n/f Will only use the watch file and ignore the watch folder.");
+							Console.WriteLine("/v followed by a space and then a year(eg2016) will allow you to change the version of AfterEffects used to render Otherwise it will use the newest installed version. \nPress ENTER to continue.");
+							Console.ReadLine();
+						}
 					}
 				} else {
 					Console.WriteLine("No Arguments");
@@ -64,13 +77,13 @@ namespace Giraffe_2 {
 			for (; ; )
 			{
 				if (!FinalOnly) {
-					PreviewRender(dir, core);
+					PreviewRender(PreviewFilePath, dir, core);
 					clear();
 					Console.WriteLine("Sleeping for 10 seconds between checking for renders");
 					Thread.Sleep(10000);
 				}
 				if (!PrevOnly) {
-					RenderFinal(dir, core);
+					RenderFinal(dir, core, FinalFilePath1, FinalFilePath2);
 					clear();
 					Console.WriteLine("Sleeping for 10 seconds between checking for renders");
 					Thread.Sleep(10000);
@@ -154,16 +167,16 @@ namespace Giraffe_2 {
 			} catch { Console.WriteLine("No console to clear."); };
 		}
 
-		static void PreviewRender(string dir, int core) {
+		static void PreviewRender(string PreviewFilePath, string dir, int core) {
 
 			double extraCore = core * 1.75;
 			//extraCore = Math.Ceiling(extraCore);
 			core = Convert.ToInt16(Math.Ceiling(extraCore));
-			string[] filepaths = Filepath(core);
+			string[] filepaths = Filepath(PreviewFilePath, core);
 			int count = 0;
 			if (filepaths == null) {
 				clear();
-				Console.WriteLine("No previews to render");
+				Console.WriteLine("No projects to render in the watch folder");
 				Thread.Sleep(4000);
 				return;
 			}
@@ -178,7 +191,7 @@ namespace Giraffe_2 {
 
 				Console.WriteLine("Starting preview render");
 				Console.WriteLine(String.Format("Launching {0} Instaces of AfterFX", count));
-				Console.WriteLine("Debug: This is the number of filepath.lenght: " + filepaths.Length);
+				//Console.WriteLine("Debug: This is the number of filepath.lenght: " + filepaths.Length);
 
 
 				for (int i = 0; i < count; i++) {
@@ -193,13 +206,15 @@ namespace Giraffe_2 {
 
 				}
 				Thread.Sleep(12000);
-				Waiter(Previews);
+				Waiter(filepaths, Previews);
 
 			}
 		}
-		static void RenderFinal(string dir, int core) {
-			var updated1 = System.IO.File.GetLastWriteTime("M:\\Render Watch folders\\AFX Render file\\AFX Render_1.aep");
-			var updated2 = System.IO.File.GetLastWriteTime("M:\\Render Watch folders\\AFX Render file\\AFX Render_2.aep");
+		static void RenderFinal(string dir, int core, string file1, string file2) {
+			string[] names = new string[1];
+			names[0] = "null";
+			var updated1 = System.IO.File.GetLastWriteTime(file1);
+			var updated2 = System.IO.File.GetLastWriteTime(file2);
 			var crtime = DateTime.Now;
 			//Console.WriteLine(crtime);
 			TimeSpan Render_1 = crtime - updated1;
@@ -215,6 +230,7 @@ namespace Giraffe_2 {
 			//render Both Render 1 and Render 2
 
 			if (maxtime >= Render_1 && maxtime >= Render_2) {
+				names[0] = "Render_1.ape";
 				Process[] processes = new Process[core];
 				Process[] processes2 = new Process[core];
 				clear();
@@ -223,42 +239,46 @@ namespace Giraffe_2 {
 				Console.WriteLine("Starting Render_1 and Render_2, begining with Render_1");
 				Console.WriteLine(String.Format("Launching {0} Instaces of AfterFX", core));
 				for (int i = 0; core > i; i++) {
-					Thread.Sleep(500);
+
 					ProcessStartInfo info = new ProcessStartInfo();
 					info.UseShellExecute = true;
 					info.FileName = dir;
-					Directory.SetCurrentDirectory("M:\\");
-					info.Arguments = " -project \"M:\\Render Watch folders\\AFX Render file\\AFX Render_1.aep\"";
+					Directory.SetCurrentDirectory(file1.Substring(0, 1) + ":\\");
+					info.Arguments = " -project " + "\"" + file1 + "\"";
 					processes[i] = Process.Start(info);
 					// processes.StartInfo = info;
 					// Process Run = Process.Start(info);
+					Thread.Sleep(3000);
 
 				}
 
 				Thread.Sleep(12000);
 				//int breaker = 0;
-				Waiter(processes);
+				Waiter(names, processes);
 
 				clear();
 				Console.WriteLine("Starting Render_2");
+				names[0] = "Render_2.ape";
 				for (int i = 0; core > i; i++) {
-					Thread.Sleep(500);
+
 					ProcessStartInfo info = new ProcessStartInfo();
 					info.UseShellExecute = true;
 					info.FileName = dir;
-					Directory.SetCurrentDirectory("M:\\");
-					info.Arguments = " -project " + "M:\\Render Watch folders\\AFX Render file\\AFX Render_2.aep\"";
+					Directory.SetCurrentDirectory(file2.Substring(0, 1) + ":\\");
+					info.Arguments = " -project " + "\"" + file2 + "\"";
 					processes2[i] = Process.Start(info);
 					// processes.StartInfo = info;
 					// Process Run = Process.Start(info);
 					//Console.WriteLine(String.Format("Yay!! There are {0} cores!", core));
+					Thread.Sleep(3000);
 				}
 
 				Thread.Sleep(12000);
-				Waiter(processes2);
+				Waiter(names, processes2);
 
 				//Render only Render 1
 			} else if (maxtime >= Render_1) {
+				names[0] = "Render_1.ape";
 				clear();
 				Console.WriteLine("Time since Render_1 was saved: " + Render_1);
 				Console.WriteLine("Starting Render_1");
@@ -267,24 +287,26 @@ namespace Giraffe_2 {
 
 
 				for (int i = 0; core > i; i++) {
-					Thread.Sleep(500);
+
 					ProcessStartInfo info = new ProcessStartInfo();
 					info.UseShellExecute = true;
 					info.FileName = dir;
-					Directory.SetCurrentDirectory("M:\\");
-					info.Arguments = " -project \"M:\\Render Watch folders\\AFX Render file\\AFX Render_1.aep\"";
+					Directory.SetCurrentDirectory(file1.Substring(0, 1) + ":\\");
+					info.Arguments = " -project " + "\"" + file1 + "\"";
 					processes[i] = Process.Start(info);
 					// processes.StartInfo = info;
 					// Process Run = Process.Start(info);
 					//Console.WriteLine(String.Format("Yay!! There are {0} cores!", core));
+					Thread.Sleep(3000);
 				}
 
 				//Thread.Sleep(12000);
-				Waiter(processes);
+				Waiter(names, processes);
 
 				//Render_2 
 			} else if (maxtime >= Render_2) {
 				clear();
+				names[0] = "Render_2.ape";
 				Console.WriteLine("Time since Render_2 was saved: " + Render_2);
 				Console.WriteLine("Starting Render_2");
 				Console.WriteLine(String.Format("Launching {0} Instaces of AfterFX", core));
@@ -292,28 +314,33 @@ namespace Giraffe_2 {
 
 
 				for (int i = 0; core > i; i++) {
-					Thread.Sleep(500);
+
 					ProcessStartInfo info = new ProcessStartInfo();
 					info.UseShellExecute = true;
 					info.FileName = dir;
-					Directory.SetCurrentDirectory("M:\\");
-					info.Arguments = " -project \"M:\\Render Watch folders\\AFX Render file\\AFX Render_2.aep\"";
+					Directory.SetCurrentDirectory(file2.Substring(0, 1) + ":\\");
+					info.Arguments = " -project " + "\"" + file2 + "\"";
 					processes2[i] = Process.Start(info);
+					Thread.Sleep(3000);
 				}
 
 				Thread.Sleep(12000);
-				Waiter(processes2);
+				Waiter(names, processes2);
 			} else {
 				//Thread.Sleep(9000);
 				return;
 			}
 		}
 
-		static string[] Filepath(int core) {
-			string[] Previews = Directory.GetFiles(@"M:\Render Watch folders\Preview watch folder\");
-			string[] coreCount = new string[Previews.Length];
-			string doneFolder = @"M:\Render Watch folders\Preview watch folder\Done\";
+		static string[] Filepath(string PreviewFilePath, int core) {
+			string[] Previews;
+			string doneFolder;
 
+			Previews = Directory.GetFiles(PreviewFilePath);
+			doneFolder = PreviewFilePath + @"\Done\";
+			string[] coreCount = new string[Previews.Length];
+
+			int crash = 0;
 
 			if (Previews.Length >= 1 && Previews.Length < core) {
 				for (int i = 0; i < Previews.Length; i++) {
@@ -324,6 +351,12 @@ namespace Giraffe_2 {
 						File.Delete(coreCount[i]);
 						i--;
 						Console.WriteLine("File already exists in Done folder. Deleting and moving new file");
+						crash++;
+						if (crash >= 2) {
+							Console.WriteLine("Can't move file, skipping");
+							crash = 0;
+							i++;
+						}
 					}
 				}
 				return coreCount;
@@ -337,6 +370,12 @@ namespace Giraffe_2 {
 						File.Delete(coreCount[i]);
 						i--;
 						Console.WriteLine("File already exists in Done folder. Deleting and moving new file");
+						crash++;
+						if (crash >= 2) {
+							Console.WriteLine("Can't move file, skipping");
+							crash = 0;
+							i++;
+						}
 					};
 				}
 				return coreCount;
@@ -348,31 +387,42 @@ namespace Giraffe_2 {
 
 		}
 
-		static void Waiter(Process[] Processes) {
+		static void Waiter(string[] names, Process[] Processes) {
 			PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
 			int breaker = 0;
+			int numOfShots = names.Length;
 			while (true) {
 				bool doBreak = true;
 				string usage = cpuCounter.NextValue().ToString("0");
 				Thread.Sleep(1000);
 				usage = cpuCounter.NextValue().ToString("0");
 				clear();
+				if (names[0] != "null") {
+					Console.WriteLine("Rendering: ");
+					for (int n = 0; n < names.Length; n++) Console.WriteLine(names[n]);
+					try {
+						Console.SetCursorPosition(0, numOfShots + 1);
+					} catch { }
+				}
 				Console.WriteLine("CPU usage:" + usage + "%");
-				int usageD = Convert.ToInt16(usage);
 
+				int usageD = Convert.ToInt16(usage);
 				foreach (Process process in Processes) {
 					if (!process.HasExited) {
 						doBreak = false;
 						break;
 					}
 				}
-
+				if (breaker == 0) Thread.Sleep(10000);
 				if (doBreak) break;
 				else if (usageD <= 5) {
-					Console.WriteLine("Breaker is now" + breaker + "it will resume the ");
+					Console.WriteLine("If the CPU isn't used the Computer will return ot the queue in " + (30 - breaker * 3) + "Seconds");
 					breaker++;
-				} else if (breaker == 30) break;
-				else Thread.Sleep(100);
+					Thread.Sleep(2000);
+				} else if (breaker == 30) {
+					breaker = 0;
+					break;
+				} else Thread.Sleep(100);
 				usage = cpuCounter.NextValue().ToString("0");
 				Thread.Sleep(100);
 				usage = cpuCounter.NextValue().ToString("0");
